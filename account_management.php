@@ -91,7 +91,6 @@ if( blossom_wedding_is_woocommerce_activated() ){
     require get_template_directory() . '/inc/woocommerce-functions.php';    
 }
 
-
 /** 
  * CUSTOM BY MARC ENGELMANN ---------------------------------------------
  */
@@ -358,7 +357,7 @@ function admin_show_all_data_function($atts) {
 		return;
 	}
 	
-	$content = '<table style="margin-bottom:60px;"><thead style="font-weight:bold;">'.create_table_row(['#', 'Anrede', 'Vorname', 'Name', 'Zusage', 'Standesamt', 'Essen','Parken', 'Letzter Login'],'','').'</thead>';
+	$content = '<table style="margin-bottom:60px;"><thead style="font-weight:bold;">'.create_table_row(['#', 'Anrede', 'Vorname', 'Name', 'Zusage', 'Standesamt', 'Essen','Parken',  'Tischnummer',"Sitzplatz",'Letzter Login'],'','').'</thead>';
 	
 	$zusagen = 0;
 	$absagen = 0;
@@ -457,8 +456,11 @@ function admin_show_all_data_function($atts) {
 			$parken_label = "ja";
 			$parken_counter ++;
 		}
+		
+		$table_number = get_field('table_number', $user_id_label);
+		$seat = get_field('sitzplatz_gast_1', $user_id_label);
 
-		$content .= create_table_row([$counter, get_field('geschlecht_gast_1', $user_id_label) === 'männlich' ? 'Herr' : 'Frau', $user->first_name, $user->last_name, $zusage, $standesamt, $essen,$parken_label, $the_login_date], $style,$zusage);
+		$content .= create_table_row([$counter, get_field('geschlecht_gast_1', $user_id_label) === 'männlich' ? 'Herr' : 'Frau', $user->first_name, $user->last_name, $zusage, $standesamt, $essen,$parken_label,$table_number,$seat, $the_login_date], $style,$zusage);
     	
 		$counter ++;
 		
@@ -524,7 +526,9 @@ function admin_show_all_data_function($atts) {
 					$style = '';
 				}
 				
-				$content .= create_table_row([$counter, (get_field('geschlecht_gast_'.$guest_id,$user_id_label) === 'männlich' ? 'Herr' : 'Frau'), get_field('vorname_'.$guest_id, $user_id_label), get_field('name_'.$guest_id, $user_id_label), $zusage, $standesamt ,$essen,"-",'-'], $style,$zusage);
+				$seat = get_field('sitzplatz_gast_'.$guest_id, $user_id_label);
+				
+				$content .= create_table_row([$counter, (get_field('geschlecht_gast_'.$guest_id,$user_id_label) === 'männlich' ? 'Herr' : 'Frau'), get_field('vorname_'.$guest_id, $user_id_label), get_field('name_'.$guest_id, $user_id_label), $zusage, $standesamt ,$essen,"-",$table_number,$seat,'-'], $style,$zusage);
 		
 			$counter ++;
 			
@@ -534,8 +538,134 @@ function admin_show_all_data_function($atts) {
 	
 	$content .='</tbody></table>';
 	$content = '<ul style="text-align:center;"><li>Wir haben '.($counter-1).' Gäste eingeladen, davon haben <b style="font-size:1.1em">'.$zusagen.'</b> zugesagt, '.$absagen.' abgesagt und <b style="font-size:1.1em">'.$unentschieden.'</b> haben sich noch nicht entschieden.</li><li>Für das Standesamt haben von den eingeplanten <b style="font-size:1.1em">'.($standesamt_geplant+$standesamt_ja+$standesamt_absage).'</b> Gästen <b style="font-size:1.1em">'.$standesamt_ja.'</b> zugesagt, '.$standesamt_absage.' abgesagt und '.$standesamt_geplant.' haben allgemein noch nicht zugesagt.</li><li>Von den '.$zusagen.' Zusagen sind '.$essen_ka.' unentschlossen, <b style="font-size:1.1em">'.$vegetarisch.'</b> haben sich für Vegetarisch, <b style="font-size:1.1em">'.$fisch.'</b> für Fisch, <b style="font-size:1.1em">'.$fleisch.'</b> für Fleisch, <b style="font-size:1.1em">'.$vegan.'</b> für Vegan und '.$kindermenu.' für das Kindermenü entschieden.</li><li>Für <b style="font-size:1.1em">'.$parken_counter.'</b> PKW unserer Gäste wird ein Parkticket benötigt.</li></ul><br/><br/>'.$content;
+	
+	$seat_array = array(
+    	array(0,1,2,3,4,5,6,7),
+    	array(0,1,2,3,4,5,6,7),
+		array(0,1,2,3,4,5,6,7),
+		array(0,1,2,3,4,5,6,7),
+		array(0,1,2,3,4,5,6,7),
+		array(0,1,2,3,4,5,6,7),
+		array(0,1,2,3,4,5,6,7),
+		array(0,1,2,3,4,5,6,7),
+		array(0,1,2,3,4,5,6,7),
+		array(0,1,2,3,4,5,6,7),
+		array(0,1,2,3,4,5,6,7)
+	);
+	
+	$seat_room = array(
+    	array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","","") 	
+	);
+	
+	foreach(range(1,11) as $table_number) {
+		
+
+		if($table_number == 1) {
+			$horizontal_begin = 5;
+			$vertical_begin = 2;
+		
+		}  elseif($table_number == 2) {
+			$horizontal_begin = 0;
+			$vertical_begin = 0;
+		
+		} elseif($table_number == 3) {
+			$horizontal_begin = 0;
+			$vertical_begin = 4;
+		
+		} elseif($table_number == 4) {
+			$horizontal_begin = 10;
+			$vertical_begin = 0;
+		
+		} elseif($table_number == 5) {
+			$horizontal_begin = 0;
+			$vertical_begin = 8;
+		
+		} elseif($table_number == 6) {
+			$horizontal_begin = 0;
+			$vertical_begin = 12;
+		
+		} elseif($table_number == 7) {
+			$horizontal_begin = 5;
+			$vertical_begin = 6;
+		
+		} elseif($table_number == 8) {
+			$horizontal_begin = 10;
+			$vertical_begin = 4;
+		
+		} elseif($table_number == 9) {
+			$horizontal_begin = 10;
+			$vertical_begin = 8;
+		
+		} elseif($table_number == 10) {
+			$horizontal_begin = 5;
+			$vertical_begin = 10;
+			
+		} elseif($table_number == 11) {
+			$horizontal_begin = 10;
+			$vertical_begin = 12;
+		} else {
+			$horizontal_begin = 0;
+			$vertical_begin = 0;
+		}
+		
+		$table_number -= 1;
+				
+		$horizontal_counter = 0;
+		$vertical_counter = 0;
+		
+		foreach(range(0,7) as $seat_number) {
+			
+			$seat_room[$vertical_begin+$vertical_counter][$horizontal_begin+$horizontal_counter] = $seat_array[$table_number][$seat_number];
+			
+			$horizontal_counter ++;
+			
+			if ($horizontal_counter == 4) {
+				$horizontal_counter = 0;
+				$vertical_counter ++;
+			}
+		}
+	}
+	
+	$content .= '<table style="margin-bottom:60px;"><thead style="font-weight:bold;">'.create_table_row(['1', '2', '3', '4', '5', '6', '7','8','9',"10",'11',"12","13","14"],'','').'</thead><tbody>';
+	
+	foreach(range(0,13) as $horizontal) {
+				
+		$content.= create_table_row_table($seat_room[$horizontal]);
+	}
+	
+	$content.= '</tbody></table>';
+	
 	return $content;
 	
+}
+
+/**
+ * Create a row of a table.
+ */
+function create_table_row_table($string_array) {
+		
+	$content = '<tr'.$tr_style.'>';
+	
+	foreach($string_array as $string) {
+			$content .= '<td>'.$string.'</td>';
+	}
+
+	$content .= '</tr>';
+	
+	return $content;
 }
 
 /**
@@ -666,6 +796,14 @@ add_action( 'admin_head', function () {
 		echo '<style>tr[data-name="geschlecht_gast_3"] { display: none; }</style>';
 		echo '<style>tr[data-name="geschlecht_gast_4"] { display: none; }</style>';
 		echo '<style>tr[data-name="geschlecht_gast_5"] { display: none; }</style>';
+		
+		echo '<style>tr[data-name="table_number"] { display: none; }</style>';
+		
+		echo '<style>tr[data-name="sitzplatz_gast_1"] { display: none; }</style>';
+		echo '<style>tr[data-name="sitzplatz_gast_2"] { display: none; }</style>';
+		echo '<style>tr[data-name="sitzplatz_gast_3"] { display: none; }</style>';
+		echo '<style>tr[data-name="sitzplatz_gast_4"] { display: none; }</style>';
+		echo '<style>tr[data-name="sitzplatz_gast_5"] { display: none; }</style>';
 		
 		//echo '<style>tr[data-name="zusage_1"] { display: none; }</style>';
 		//echo '<style>tr[data-name="zusage_2"] { display: none; }</style>';
