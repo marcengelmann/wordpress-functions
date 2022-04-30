@@ -570,6 +570,12 @@ function admin_show_all_data_function($atts) {
 		array("","","","","","","","","","","","","",""),
 		array("","","","","","","","","","","","","",""),
 		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
+		array("","","","","","","","","","","","","",""),
 		array("","","","","","","","","","","","","","") 	
 	);
 	
@@ -578,50 +584,62 @@ function admin_show_all_data_function($atts) {
 
 		if($table_number == 1) {
 			$horizontal_begin = 5;
-			$vertical_begin = 2;
-		
+			$vertical_begin = 3;
+			$bg_color="#72766E";
+			
 		}  elseif($table_number == 2) {
 			$horizontal_begin = 0;
 			$vertical_begin = 0;
+			$bg_color="#F1D1CE";
 		
 		} elseif($table_number == 3) {
 			$horizontal_begin = 0;
-			$vertical_begin = 4;
+			$vertical_begin = 12;
+			$bg_color="#969C99";
 		
 		} elseif($table_number == 4) {
 			$horizontal_begin = 10;
 			$vertical_begin = 0;
+			$bg_color="#D2D9C3";
 		
 		} elseif($table_number == 5) {
 			$horizontal_begin = 0;
-			$vertical_begin = 8;
+			$vertical_begin = 6;
+			$bg_color="#765C5F";
 		
 		} elseif($table_number == 6) {
 			$horizontal_begin = 0;
-			$vertical_begin = 12;
+			$vertical_begin = 18;
+			$bg_color="#72766E";
 		
 		} elseif($table_number == 7) {
 			$horizontal_begin = 5;
-			$vertical_begin = 6;
+			$vertical_begin = 9;
+			$bg_color="#72766E";
 		
 		} elseif($table_number == 8) {
 			$horizontal_begin = 10;
-			$vertical_begin = 4;
+			$vertical_begin = 6;
+			$bg_color="#72766E";
 		
 		} elseif($table_number == 9) {
 			$horizontal_begin = 10;
-			$vertical_begin = 8;
+			$vertical_begin = 12;
+			$bg_color="#72766E";
 		
 		} elseif($table_number == 10) {
 			$horizontal_begin = 5;
-			$vertical_begin = 10;
+			$vertical_begin = 15;
+			$bg_color="#72766E";
 			
 		} elseif($table_number == 11) {
 			$horizontal_begin = 10;
-			$vertical_begin = 12;
+			$vertical_begin = 18;
+			$bg_color="#72766E";
 		} else {
 			$horizontal_begin = 0;
 			$vertical_begin = 0;
+			$bg_color = '#FFF';
 		}
 		
 		$table_number -= 1;
@@ -631,7 +649,13 @@ function admin_show_all_data_function($atts) {
 		
 		foreach(range(0,7) as $seat_number) {
 			
-			$seat_room[$vertical_begin+$vertical_counter][$horizontal_begin+$horizontal_counter] = $seat_array[$table_number][$seat_number];
+			$seat_occupier = $seat_array[$table_number][$seat_number];
+			
+			if($seat_occupier === "") {
+				$seat_occupier = "-";
+			}
+			
+			$seat_room[$vertical_begin+$vertical_counter][$horizontal_begin+$horizontal_counter] = $seat_occupier;
 			
 			$horizontal_counter ++;
 			
@@ -642,11 +666,13 @@ function admin_show_all_data_function($atts) {
 		}
 	}
 	
-	$content .= '<table style="margin-bottom:60px;"><tbody>';
+	$content .= '<h2 class="widget-title" itemprop="name">Sitzplan</h2><table style="margin-bottom:60px;"><tbody>';
 	
-	foreach(range(0,13) as $horizontal) {
+	$bg_color = '#e39696';
+	
+	foreach(range(0,19) as $horizontal) {
 				
-		$content.= create_table_row_table($seat_room[$horizontal]);
+		$content.= create_table_row_table($seat_room[$horizontal],$bg_color);
 	}
 	
 	$content.= '</tbody></table>';
@@ -658,12 +684,17 @@ function admin_show_all_data_function($atts) {
 /**
  * Create a row of a table.
  */
-function create_table_row_table($string_array) {
+function create_table_row_table($string_array, $bg_color) {
 		
 	$content = '<tr'.$tr_style.'>';
 	
 	foreach($string_array as $string) {
-			$content .= '<td>'.$string.'</td>';
+		
+			if($string === "") {
+				$content .= '<td style="background-color:#FFF !important;">'.$string.'</td>';
+			} else {
+				$content .= '<td style="text-align:center; color:#FFF; background-color:'.$bg_color.' !important;">'.$string.'</td>';
+			}	
 	}
 
 	$content .= '</tr>';
@@ -864,7 +895,7 @@ function my_acf_prepare_field( $field ) {
 				return $field;
 			}
 
-			$field['label'] = str_replace('Gast '.$guest_id, get_field('vorname_'.$guest_id,$user_id), $field['label']);
+			$field['label'] = str_replace('Gast '.$guest_id, get_field('vorname_'.$guest_id,'user_'.$_GET['user_id']), $field['label']);
 		}
 	}
 	
