@@ -374,6 +374,20 @@ function admin_show_all_data_function($atts) {
 	$essen_ka = 0;
 	$parken_counter = 0;
 	
+	$seat_array = array(
+    	array("","","","","","","",""),
+		array("","","","","","","",""),
+		array("","","","","","","",""),
+		array("","","","","","","",""),
+		array("","","","","","","",""),
+		array("","","","","","","",""),
+		array("","","","","","","",""),
+		array("","","","","","","",""),
+		array("","","","","","","",""),
+		array("","","","","","","",""),
+		array("","","","","","","","")
+	);
+	
 	$users = get_users();
 	$counter = 1;
 	$content .='<tbody>';
@@ -459,6 +473,8 @@ function admin_show_all_data_function($atts) {
 		
 		$table_number = get_field('table_number', $user_id_label);
 		$seat = get_field('sitzplatz_gast_1', $user_id_label);
+		
+		$seat_array[$table_number-1][$seat-1] .= $user->first_name;
 
 		$content .= create_table_row([$counter, get_field('geschlecht_gast_1', $user_id_label) === 'männlich' ? 'Herr' : 'Frau', $user->first_name, $user->last_name, $zusage, $standesamt, $essen,$parken_label,$table_number,$seat, $the_login_date], $style,$zusage);
     	
@@ -527,6 +543,7 @@ function admin_show_all_data_function($atts) {
 				}
 				
 				$seat = get_field('sitzplatz_gast_'.$guest_id, $user_id_label);
+				$seat_array[$table_number-1][$seat-1] .= get_field('vorname_'.$guest_id, $user_id_label);
 				
 				$content .= create_table_row([$counter, (get_field('geschlecht_gast_'.$guest_id,$user_id_label) === 'männlich' ? 'Herr' : 'Frau'), get_field('vorname_'.$guest_id, $user_id_label), get_field('name_'.$guest_id, $user_id_label), $zusage, $standesamt ,$essen,"-",$table_number,$seat,'-'], $style,$zusage);
 		
@@ -538,20 +555,6 @@ function admin_show_all_data_function($atts) {
 	
 	$content .='</tbody></table>';
 	$content = '<ul style="text-align:center;"><li>Wir haben '.($counter-1).' Gäste eingeladen, davon haben <b style="font-size:1.1em">'.$zusagen.'</b> zugesagt, '.$absagen.' abgesagt und <b style="font-size:1.1em">'.$unentschieden.'</b> haben sich noch nicht entschieden.</li><li>Für das Standesamt haben von den eingeplanten <b style="font-size:1.1em">'.($standesamt_geplant+$standesamt_ja+$standesamt_absage).'</b> Gästen <b style="font-size:1.1em">'.$standesamt_ja.'</b> zugesagt, '.$standesamt_absage.' abgesagt und '.$standesamt_geplant.' haben allgemein noch nicht zugesagt.</li><li>Von den '.$zusagen.' Zusagen sind '.$essen_ka.' unentschlossen, <b style="font-size:1.1em">'.$vegetarisch.'</b> haben sich für Vegetarisch, <b style="font-size:1.1em">'.$fisch.'</b> für Fisch, <b style="font-size:1.1em">'.$fleisch.'</b> für Fleisch, <b style="font-size:1.1em">'.$vegan.'</b> für Vegan und '.$kindermenu.' für das Kindermenü entschieden.</li><li>Für <b style="font-size:1.1em">'.$parken_counter.'</b> PKW unserer Gäste wird ein Parkticket benötigt.</li></ul><br/><br/>'.$content;
-	
-	$seat_array = array(
-    	array(0,1,2,3,4,5,6,7),
-    	array(0,1,2,3,4,5,6,7),
-		array(0,1,2,3,4,5,6,7),
-		array(0,1,2,3,4,5,6,7),
-		array(0,1,2,3,4,5,6,7),
-		array(0,1,2,3,4,5,6,7),
-		array(0,1,2,3,4,5,6,7),
-		array(0,1,2,3,4,5,6,7),
-		array(0,1,2,3,4,5,6,7),
-		array(0,1,2,3,4,5,6,7),
-		array(0,1,2,3,4,5,6,7)
-	);
 	
 	$seat_room = array(
     	array("","","","","","","","","","","","","",""),
@@ -639,7 +642,7 @@ function admin_show_all_data_function($atts) {
 		}
 	}
 	
-	$content .= '<table style="margin-bottom:60px;"><thead style="font-weight:bold;">'.create_table_row(['1', '2', '3', '4', '5', '6', '7','8','9',"10",'11',"12","13","14"],'','').'</thead><tbody>';
+	$content .= '<table style="margin-bottom:60px;"><tbody>';
 	
 	foreach(range(0,13) as $horizontal) {
 				
