@@ -374,19 +374,21 @@ function admin_show_all_data_function($atts) {
 	$essen_ka = 0;
 	$parken_counter = 0;
 	
-	$seat_array = array(
-    	array("","","","","","","",""),
-		array("","","","","","","",""),
-		array("","","","","","","",""),
-		array("","","","","","","",""),
-		array("","","","","","","",""),
-		array("","","","","","","",""),
-		array("","","","","","","",""),
-		array("","","","","","","",""),
-		array("","","","","","","",""),
-		array("","","","","","","",""),
-		array("","","","","","","","")
-	);
+	class SeatDetails {
+		public $name = "";
+		public $color = "";
+		public $meal = "";
+	}
+	
+	$seat_array = array();
+
+	foreach(range(0,10) as $vertical_dim) {
+		$row = array();
+		foreach(range(0,7) as $horizontal_dim) {
+			$row[] = new SeatDetails;
+		}
+		$seat_array[] = $row;
+	}
 	
 	$users = get_users();
 	$counter = 1;
@@ -474,7 +476,8 @@ function admin_show_all_data_function($atts) {
 		$table_number = get_field('table_number', $user_id_label);
 		$seat = get_field('sitzplatz_gast_1', $user_id_label);
 		
-		$seat_array[$table_number-1][$seat-1] .= $user->first_name;
+		$seat_array[$table_number-1][$seat-1]->name .= $user->first_name;
+		$seat_array[$table_number-1][$seat-1]->meal .= $essen;
 
 		$content .= create_table_row([$counter, get_field('geschlecht_gast_1', $user_id_label) === 'männlich' ? 'Herr' : 'Frau', $user->first_name, $user->last_name, $zusage, $standesamt, $essen,$parken_label,$table_number,$seat, $the_login_date], $style,$zusage);
     	
@@ -543,7 +546,8 @@ function admin_show_all_data_function($atts) {
 				}
 				
 				$seat = get_field('sitzplatz_gast_'.$guest_id, $user_id_label);
-				$seat_array[$table_number-1][$seat-1] .= get_field('vorname_'.$guest_id, $user_id_label);
+				$seat_array[$table_number-1][$seat-1]->name .= get_field('vorname_'.$guest_id, $user_id_label);
+				$seat_array[$table_number-1][$seat-1]->meal .= $essen;
 				
 				$content .= create_table_row([$counter, (get_field('geschlecht_gast_'.$guest_id,$user_id_label) === 'männlich' ? 'Herr' : 'Frau'), get_field('vorname_'.$guest_id, $user_id_label), get_field('name_'.$guest_id, $user_id_label), $zusage, $standesamt ,$essen,"-",$table_number,$seat,'-'], $style,$zusage);
 		
@@ -556,86 +560,69 @@ function admin_show_all_data_function($atts) {
 	$content .='</tbody></table>';
 	$content = '<ul style="text-align:center;"><li>Wir haben '.($counter-1).' Gäste eingeladen, davon haben <b style="font-size:1.1em">'.$zusagen.'</b> zugesagt, '.$absagen.' abgesagt und <b style="font-size:1.1em">'.$unentschieden.'</b> haben sich noch nicht entschieden.</li><li>Für das Standesamt haben von den eingeplanten <b style="font-size:1.1em">'.($standesamt_geplant+$standesamt_ja+$standesamt_absage).'</b> Gästen <b style="font-size:1.1em">'.$standesamt_ja.'</b> zugesagt, '.$standesamt_absage.' abgesagt und '.$standesamt_geplant.' haben allgemein noch nicht zugesagt.</li><li>Von den '.$zusagen.' Zusagen sind '.$essen_ka.' unentschlossen, <b style="font-size:1.1em">'.$vegetarisch.'</b> haben sich für Vegetarisch, <b style="font-size:1.1em">'.$fisch.'</b> für Fisch, <b style="font-size:1.1em">'.$fleisch.'</b> für Fleisch, <b style="font-size:1.1em">'.$vegan.'</b> für Vegan und '.$kindermenu.' für das Kindermenü entschieden.</li><li>Für <b style="font-size:1.1em">'.$parken_counter.'</b> PKW unserer Gäste wird ein Parkticket benötigt.</li></ul><br/><br/>'.$content;
 	
-	$seat_room = array(
-    	array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","",""),
-		array("","","","","","","","","","","","","","") 	
-	);
+	$seat_room = array();
+	
+	foreach(range(0,19) as $vertical_dim) {
+		$row = array();
+		foreach(range(0,13) as $horizontal_dim) {
+			$row[] = "";
+		}
+		$seat_room[] = $row;
+	}
+	
+	$colors = ["#54bebe", "#76c8c8", "#98d1d1", "#badbdb", "#dedad2", "#e4bcad", "#df979e", "#d7658b", "#c80064","#5E8080","#FF4DA6"];
+	shuffle($colors);
+	array_unshift($colors , '');
 	
 	foreach(range(1,11) as $table_number) {
 		
-
+		$bg_color=$colors[$table_number];
+		
 		if($table_number == 1) {
 			$horizontal_begin = 5;
 			$vertical_begin = 3;
-			$bg_color="#72766E";
 			
 		}  elseif($table_number == 2) {
 			$horizontal_begin = 0;
 			$vertical_begin = 0;
-			$bg_color="#F1D1CE";
-		
+					
 		} elseif($table_number == 3) {
 			$horizontal_begin = 0;
 			$vertical_begin = 12;
-			$bg_color="#969C99";
-		
+					
 		} elseif($table_number == 4) {
 			$horizontal_begin = 10;
 			$vertical_begin = 0;
-			$bg_color="#D2D9C3";
-		
+					
 		} elseif($table_number == 5) {
 			$horizontal_begin = 0;
 			$vertical_begin = 6;
-			$bg_color="#765C5F";
-		
+					
 		} elseif($table_number == 6) {
 			$horizontal_begin = 0;
 			$vertical_begin = 18;
-			$bg_color="#72766E";
-		
+					
 		} elseif($table_number == 7) {
 			$horizontal_begin = 5;
 			$vertical_begin = 9;
-			$bg_color="#72766E";
-		
+					
 		} elseif($table_number == 8) {
 			$horizontal_begin = 10;
 			$vertical_begin = 6;
-			$bg_color="#72766E";
-		
+					
 		} elseif($table_number == 9) {
 			$horizontal_begin = 10;
 			$vertical_begin = 12;
-			$bg_color="#72766E";
-		
+					
 		} elseif($table_number == 10) {
 			$horizontal_begin = 5;
 			$vertical_begin = 15;
-			$bg_color="#72766E";
+			$bg_color=$colors[$table_number];
 			
 		} elseif($table_number == 11) {
 			$horizontal_begin = 10;
 			$vertical_begin = 18;
-			$bg_color="#72766E";
+			
 		} else {
 			$horizontal_begin = 0;
 			$vertical_begin = 0;
@@ -650,11 +637,12 @@ function admin_show_all_data_function($atts) {
 		foreach(range(0,7) as $seat_number) {
 			
 			$seat_occupier = $seat_array[$table_number][$seat_number];
+			$seat_occupier->color = $bg_color;
 			
-			if($seat_occupier === "") {
-				$seat_occupier = "-";
+			if($seat_occupier->name === "") {
+				$seat_occupier->name = "-";
 			}
-			
+						
 			$seat_room[$vertical_begin+$vertical_counter][$horizontal_begin+$horizontal_counter] = $seat_occupier;
 			
 			$horizontal_counter ++;
@@ -667,12 +655,10 @@ function admin_show_all_data_function($atts) {
 	}
 	
 	$content .= '<h2 class="widget-title" itemprop="name">Sitzplan</h2><table style="margin-bottom:60px;"><tbody>';
-	
-	$bg_color = '#e39696';
-	
+		
 	foreach(range(0,19) as $horizontal) {
 				
-		$content.= create_table_row_table($seat_room[$horizontal],$bg_color);
+		$content.= create_table_row_table($seat_room[$horizontal]);
 	}
 	
 	$content.= '</tbody></table>';
@@ -684,16 +670,18 @@ function admin_show_all_data_function($atts) {
 /**
  * Create a row of a table.
  */
-function create_table_row_table($string_array, $bg_color) {
+function create_table_row_table($string_array) {
 		
 	$content = '<tr'.$tr_style.'>';
 	
 	foreach($string_array as $string) {
 		
-			if($string === "") {
-				$content .= '<td style="background-color:#FFF !important;">'.$string.'</td>';
+			$bg_color = $string->color;
+		
+			if($string->name == "") {
+				$content .= '<td style="font-size:12px;padding:20px;background-color:#FFF !important;"></td>';
 			} else {
-				$content .= '<td style="text-align:center; color:#FFF; background-color:'.$bg_color.' !important;">'.$string.'</td>';
+				$content .= '<td style="font-weight:bold;font-size:12px;padding:2px;text-align:center; color:#FFF; background-color:'.$bg_color.' !important;">'.$string->name.'</td>';
 			}	
 	}
 
@@ -895,7 +883,7 @@ function my_acf_prepare_field( $field ) {
 				return $field;
 			}
 
-			$field['label'] = str_replace('Gast '.$guest_id, get_field('vorname_'.$guest_id,'user_'.$_GET['user_id']), $field['label']);
+			$field['label'] = str_replace('Gast '.$guest_id, get_field('vorname_'.$guest_id,$user_id), $field['label']);
 		}
 	}
 	
