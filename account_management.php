@@ -357,7 +357,7 @@ function admin_show_all_data_function($atts) {
 		return;
 	}
 	
-	$content = '<table style="margin-bottom:60px;"><thead style="font-weight:bold;">'.create_table_row(['#', 'Anrede', 'Vorname', 'Name', 'Zusage', 'Standesamt', 'Essen','Parken',  'Tischnummer',"Sitzplatz",'Letzter Login'],'','').'</thead>';
+	$content = '<table style="margin-bottom:60px;"><thead style="font-weight:bold;">'.create_table_row(['#', 'Anrede', 'Vorname', 'Name', 'Zusage', 'Standesamt', 'Essen','PKW',  'Tisch',"Platz",'Login'],'','').'</thead>';
 	
 	$zusagen = 0;
 	$absagen = 0;
@@ -378,14 +378,31 @@ function admin_show_all_data_function($atts) {
 		public $name = "";
 		public $color = "";
 		public $meal = "";
+		public $table = "";
+		public $table_name = "";
+		public $seat = "";
 	}
 	
+	class TableDetails {
+		public $id = "";
+		public $name = "";
+		public $color = "";
+	}
+		
 	$seat_array = array();
+	$table_info = array();
+	
+	foreach(range(0,10) as $ntng) {
+		$table_info[] = new TableDetails;
+	}
 
 	foreach(range(0,10) as $vertical_dim) {
 		$row = array();
 		foreach(range(0,7) as $horizontal_dim) {
-			$row[] = new SeatDetails;
+			$seat = new SeatDetails;
+			$seat->table = $vertical_dim+1;
+			$seat->seat = $horizontal_dim+1;
+			$row[] = $seat;
 		}
 		$seat_array[] = $row;
 	}
@@ -409,8 +426,6 @@ function admin_show_all_data_function($atts) {
 		} else {
 			$the_login_date = 'vor '.human_time_diff($last_login);
 		}
-    	
-		
 		
 		$zusage = get_field('zusage_1', $user_id_label);
 		if($zusage === 'Zusage') {
@@ -473,11 +488,17 @@ function admin_show_all_data_function($atts) {
 			$parken_counter ++;
 		}
 		
-		$table_number = get_field('table_number', $user_id_label);
+		$table_number = get_field('table_number', $user_id_label)['value'];
+		$table_name = get_field('table_number', $user_id_label)['label'];
+		
+		$table_info[$table_number-1]->id = $table_number;
+		$table_info[$table_number-1]->name = $table_name;
+		
 		$seat = get_field('sitzplatz_gast_1', $user_id_label);
 		
 		$seat_array[$table_number-1][$seat-1]->name .= $user->first_name;
 		$seat_array[$table_number-1][$seat-1]->meal .= $essen;
+		$seat_array[$table_number-1][$seat-1]->table_name = $table_name; 
 
 		$content .= create_table_row([$counter, get_field('geschlecht_gast_1', $user_id_label) === 'männlich' ? 'Herr' : 'Frau', $user->first_name, $user->last_name, $zusage, $standesamt, $essen,$parken_label,$table_number,$seat, $the_login_date], $style,$zusage);
     	
@@ -548,6 +569,7 @@ function admin_show_all_data_function($atts) {
 				$seat = get_field('sitzplatz_gast_'.$guest_id, $user_id_label);
 				$seat_array[$table_number-1][$seat-1]->name .= get_field('vorname_'.$guest_id, $user_id_label);
 				$seat_array[$table_number-1][$seat-1]->meal .= $essen;
+				$seat_array[$table_number-1][$seat-1]->table_name = $table_name; 
 				
 				$content .= create_table_row([$counter, (get_field('geschlecht_gast_'.$guest_id,$user_id_label) === 'männlich' ? 'Herr' : 'Frau'), get_field('vorname_'.$guest_id, $user_id_label), get_field('name_'.$guest_id, $user_id_label), $zusage, $standesamt ,$essen,"-",$table_number,$seat,'-'], $style,$zusage);
 		
@@ -569,7 +591,7 @@ function admin_show_all_data_function($atts) {
 		}
 		$seat_room[] = $row;
 	}
-	
+		
 	$colors = ["#54bebe", "#76c8c8", "#98d1d1", "#badbdb", "#dedad2", "#e4bcad", "#df979e", "#d7658b", "#c80064","#5E8080","#FF4DA6"];
 	shuffle($colors);
 	array_unshift($colors , '');
@@ -634,6 +656,8 @@ function admin_show_all_data_function($atts) {
 		$horizontal_counter = 0;
 		$vertical_counter = 0;
 		
+		$table_info[$table_number]->color = $bg_color;
+		
 		foreach(range(0,7) as $seat_number) {
 			
 			$seat_occupier = $seat_array[$table_number][$seat_number];
@@ -654,7 +678,7 @@ function admin_show_all_data_function($atts) {
 		}
 	}
 	
-	$content .= '<h2 class="widget-title" itemprop="name">Sitzplan</h2><table style="margin-bottom:60px;"><tbody>';
+	$content .= '<h2 class="widget-title" itemprop="name">Sitzplan</h2><table style="margin-bottom:20px;border-collapse:separate;"><tbody>';
 		
 	foreach(range(0,19) as $horizontal) {
 				
@@ -662,6 +686,15 @@ function admin_show_all_data_function($atts) {
 	}
 	
 	$content.= '</tbody></table>';
+	
+	$content .= '<br/><br/><div style="padding-bottom:60px;margin-bottom:60px;font-size:10px;line-height: 20px;">';
+	
+	foreach ($table_info as $table) {
+		$content .='<div style="float:left;text-align:center;margin:10px;"><div><div style="float:left;width:20px !important;height:20px !important;border-radius:10px;background-color:'.$table->color.';"></div><div style="float:left;padding-left:5px;">'.$table->name.'</div></div></div>';
+		$content .='';
+	}
+	
+	$content.= '</div>';
 	
 	return $content;
 	
@@ -677,16 +710,28 @@ function create_table_row_table($string_array) {
 	foreach($string_array as $string) {
 		
 			$bg_color = $string->color;
+			
+			if($string->seat == 1) {
+				$radius = "10px 0 0 0";
+			}else if($string->seat == 4) {
+				$radius = "0 10px 0 0";
+			} else if($string->seat == 8) {
+				$radius = "0 0 10px 0";
+			} else if($string->seat == 5) {
+				$radius = "0 0 0 10px";
+			}  else {
+				$radius = "0px 0px 0px 0px";
+			}
 		
 			if($string->name == "") {
-				$content .= '<td style="font-size:12px;padding:20px;background-color:#FFF !important;"></td>';
+				$content .= '<td style="padding:5px;background-color:#FFF !important;"></td>';
 			} else {
-				$content .= '<td style="font-weight:bold;font-size:12px;padding:2px;text-align:center; color:#FFF; background-color:'.$bg_color.' !important;">'.$string->name.'</td>';
+				$content .= '<td style="font-size:14px;background-clip: padding-box;border-radius:'.$radius.';font-weight:bold;padding:5px;text-align:center; color:#FFF; background-color:'.$bg_color.' !important;" title="Tisch '.$string->table_name.' Platz '.$string->seat.' ('.$string->meal.')">'.$string->name.'</td>';
 			}	
 	}
 
 	$content .= '</tr>';
-	
+		
 	return $content;
 }
 
